@@ -1,5 +1,6 @@
-FROM golang:1.22-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
+RUN apk add --no-cache curl tar
 RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 WORKDIR /app
@@ -9,6 +10,10 @@ RUN go mod download
 COPY . .
 
 RUN swag init -g cmd/main.go
+
+RUN curl -L https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.14.tar.gz | tar -xz && \
+    cp -r swagger-ui-5.17.14/dist/* ./docs/ && \
+    sed -i 's|https://petstore.swagger.io/v2/swagger.json|./swagger.json|g' ./docs/swagger-initializer.js
 
 RUN go build -o go-test-app ./cmd/main.go
 
