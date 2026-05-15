@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"go-test-system/internal/config"
 	"log/slog"
 	"net/http"
 	"os"
@@ -18,17 +19,6 @@ import (
 	"go-test-system/internal/helpers"
 	"go-test-system/internal/transport/router"
 )
-
-type Config struct {
-	DBURL        string
-	RedisHost    string
-	RedisPort    string
-	RedisPass    string
-	AppPort      string
-	ReadTimeout  time.Duration
-	WriteTimeout time.Duration
-	IdleTimeout  time.Duration
-}
 
 // @title Go test task API
 // @version 1.0
@@ -49,15 +39,19 @@ func main() {
 		logger.Warn("No .env file provided, use `make set-env`")
 	}
 
-	cfg := &Config{
-		DBURL:        os.Getenv("DATABASE_URL"),
-		RedisHost:    os.Getenv("REDIS_HOST"),
-		RedisPort:    os.Getenv("REDIS_PORT"),
-		RedisPass:    os.Getenv("REDIS_PASSWORD"),
-		AppPort:      os.Getenv("PORT"),
-		ReadTimeout:  helpers.GetEnvDuration("SERVER_READ_TIMEOUT", 5*time.Second, logger),
-		WriteTimeout: helpers.GetEnvDuration("SERVER_WRITE_TIMEOUT", 10*time.Second, logger),
-		IdleTimeout:  helpers.GetEnvDuration("SERVER_IDLE_TIMEOUT", 120*time.Second, logger),
+	cfg := &config.Config{
+		DBURL:            os.Getenv("DATABASE_URL"),
+		RedisAddr:        fmt.Sprintf("%s:%s", os.Getenv("REDIS_HOST"), os.Getenv("REDIS_PORT")),
+		RedisPass:        os.Getenv("REDIS_PASSWORD"),
+		AppPort:          os.Getenv("PORT"),
+		ReadTimeout:      helpers.GetEnvDuration("SERVER_READ_TIMEOUT", 5*time.Second, logger),
+		WriteTimeout:     helpers.GetEnvDuration("SERVER_WRITE_TIMEOUT", 10*time.Second, logger),
+		IdleTimeout:      helpers.GetEnvDuration("SERVER_IDLE_TIMEOUT", 120*time.Second, logger),
+		SkinportUrl:      os.Getenv("SKINPORT_URL"),
+		SkinportAppID:    os.Getenv("SKINPORT_APP_ID"),
+		SkinportCurrency: os.Getenv("SKINPORT_CURRENCY"),
+		SkinportCacheTTL: helpers.GetEnvDuration("SKINPORT_CACHE_TTL", 3600*time.Second, logger),
+		SkinportTimeout:  helpers.GetEnvDuration("SKINPORT_TIMEOUT", 30*time.Second, logger),
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -78,7 +72,7 @@ func main() {
 
 	// Redis
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%s:%s", cfg.RedisHost, cfg.RedisPort),
+		Addr:     cfg.RedisAddr,
 		Password: cfg.RedisPass,
 		DB:       0,
 	})
@@ -89,6 +83,10 @@ func main() {
 		}
 	}(rdb)
 
+	httpClient := &http.Client{
+		Timeout: cfg.SkinportTimeout,
+	}
+
 	if err := rdb.Ping(ctx).Err(); err != nil {
 		logger.Error("redis ping failed", "err", err)
 		os.Exit(1)
@@ -98,9 +96,11 @@ func main() {
 
 	// Routing & Server
 	deps := router.Deps{
-		DB:     dbPool,
-		Redis:  rdb,
-		Logger: logger,
+		DB:         dbPool,
+		Redis:      rdb,
+		Logger:     logger,
+		HttpClient: httpClient,
+		Cfg:        cfg,
 	}
 	newRouter := router.NewRouter(deps)
 

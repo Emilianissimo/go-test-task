@@ -1,4 +1,12 @@
+# Prelude
+I decided to use a lot of commented conventions that point to areas for extending functionality. This version is simplified and deliberately limited to a couple of endpoints to save time. But extensibility was built in from the start.
+### Features
+- Logging and observability
+- Static docs generation
+- Fin-tech based finance model
+
 # Quick Start
+
 Follow these steps to spin up the entire infrastructure (Postgres + Go Backend + Nginx):
 ```bash
 make set-env

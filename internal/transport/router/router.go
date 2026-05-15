@@ -1,10 +1,13 @@
 package router
 
 import (
+	"go-test-system/internal/config"
+	"go-test-system/internal/provider/skinport"
 	"go-test-system/internal/repository/postgres"
 	"go-test-system/internal/service"
 	"go-test-system/internal/transport/controller"
 	"log/slog"
+	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -13,9 +16,11 @@ import (
 )
 
 type Deps struct {
-	DB     *pgxpool.Pool
-	Redis  *redis.Client
-	Logger *slog.Logger
+	DB         *pgxpool.Pool
+	Redis      *redis.Client
+	Logger     *slog.Logger
+	HttpClient *http.Client
+	Cfg        *config.Config
 }
 
 func NewRouter(deps Deps) chi.Router {
@@ -24,11 +29,18 @@ func NewRouter(deps Deps) chi.Router {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 
+	// External client and services & controllers
+	spClient := skinport.NewClient(deps.Cfg, deps.HttpClient, deps.Logger)
+	itemSvc := service.NewItemService(spClient, deps.Logger)
+	itemHandler := controller.NewItemHandler(itemSvc, deps.Cfg, deps.Redis, deps.Logger)
+
+	// Internal repos and services & controllers
 	walletRepo := postgres.NewWalletRepository(deps.DB)
 	walletSvc := service.NewWalletService(walletRepo, deps.Logger)
 	walletHandler := controller.NewWalletHandler(walletSvc, deps.Logger)
 
 	r.Route("/v1", func(r chi.Router) {
+		r.Get("/external/items/", itemHandler.FetchItems)
 		r.Get("/wallets/{id}", walletHandler.GetByID)
 	})
 
