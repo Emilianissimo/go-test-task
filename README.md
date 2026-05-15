@@ -22,6 +22,12 @@ make start
 make migrate
 ```
 
+### Tests e2e
+Test run windows only, as far as I did it on Windows, can be adapted as needed.
+```powershell
+make e2e-windows
+```
+
 | Resource              | Path                                         | Description                            |
 |:----------------------|:---------------------------------------------|:---------------------------------------|
 | **Swagger UI**        | `http://localhost:8080/swagger/`             | Interactive API documentation (Static) |

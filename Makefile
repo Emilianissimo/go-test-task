@@ -25,5 +25,5 @@ rollback:
 migrate-clean-all:
 	docker compose run --rm migrate drop -f
 
-enter_db:
-	docker exec -it cpp_api_db_container psql --username=core_db_user --dbname=core_db
+e2e-windows:
+	powershell -ExecutionPolicy Bypass -File .\scripts\test_e2e.ps1
