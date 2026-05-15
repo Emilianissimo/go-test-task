@@ -48,7 +48,7 @@ func NewItemHandler(service *service.ItemService, cfg *config.Config, redis *red
 // @Produce      json
 // @Success      200  {array}   domain.MergedItem "Successfully merged items"
 // @Failure      502  {object}  map[string]string "Upstream error (Skinport unreachable)"
-// @Router       /v1/external/items/ [get]
+// @Router       /v1/external/items [get]
 func (h *ItemHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	cacheKey := "skinport:items:merged:" + h.cfg.SkinportAppID + ":" + h.cfg.SkinportCurrency

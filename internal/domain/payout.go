@@ -15,10 +15,9 @@ const (
 )
 
 type PayoutRequest struct {
-	TargetID       string          `json:"target_id" validate:"required"`
-	WalletID       int64           `json:"wallet_id" validate:"required"`
-	Amount         decimal.Decimal `json:"amount" validate:"required,gt=0"`
-	IdempotencyKey uuid.UUID       `json:"idempotency_key" validate:"required"`
+	TargetID string          `json:"target_id" validate:"required"`
+	WalletID int64           `json:"wallet_id" validate:"required"`
+	Amount   decimal.Decimal `json:"amount" validate:"required,gt=0"`
 }
 
 type Payout struct {

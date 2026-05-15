@@ -76,13 +76,15 @@ INSERT INTO transactions (
     op_type,
     op_id,
     amount,
-    status
+    status,
+    tx_id
 )
 VALUES (
        2,                       -- Deposit
        0,                       -- Placeholder
        1000.00,
-       2                    -- Status: confirmed
-   );
+       2,                    -- Status: confirmed
+        'fake'
+       );
 
 COMMIT;
