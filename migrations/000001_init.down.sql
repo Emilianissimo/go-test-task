@@ -1,16 +1,17 @@
-upstream app_upstream {
-    server app:8080 fail_timeout=0;
-}
+BEGIN;
 
-server {
-    listen 8080;
-    server_name localhost;
+-- 1. Удаляем индексы (хотя DROP TABLE сделает это сам, для чистоты структуры в скрипте полезно)
+DROP INDEX IF EXISTS idx_tx_idempotency;
+DROP INDEX IF EXISTS idx_payout_wallet_from;
+DROP INDEX IF EXISTS idx_wallets_user_id;
 
-    location / {
-        proxy_pass http://app_upstream;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
+-- 2. Удаляем таблицы в порядке, обратном созданию
+DROP TABLE IF EXISTS transactions;
+DROP TABLE IF EXISTS payouts;
+DROP TABLE IF EXISTS wallets;
+DROP TABLE IF EXISTS users;
+
+-- 3. Удаляем кастомные типы (ENUM)
+DROP TYPE IF EXISTS payout_status;
+
+COMMIT;

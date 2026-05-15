@@ -42,6 +42,21 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    networks:
+      - go-test-network
+
+  migrate:
+    image: migrate/migrate:4
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./migrations:/migrations:ro
+    env_file:
+      - .env
+    entrypoint: [ "migrate", "-path", "/migrations", "-database", "${DATABASE_MIGRATION_URL}" ]
     networks:
       - go-test-network
 
