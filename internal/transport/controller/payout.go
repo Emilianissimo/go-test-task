@@ -26,8 +26,8 @@ func NewPayoutHandler(service PayoutService, logger *slog.Logger) *PayoutHandler
 	}
 }
 
-// Create godoc
-// @Summary      Create a new payout
+// CreatePayout GoDoc
+// @Summary      CreatePayout a new payout
 // @Description  Initiates a payout from a wallet. Protected by idempotency middleware.
 // @Tags         payouts
 // @Accept       json
@@ -40,7 +40,7 @@ func NewPayoutHandler(service PayoutService, logger *slog.Logger) *PayoutHandler
 // @Failure      404  {object}  map[string]string "Wallet not found"
 // @Failure      409  {object}  map[string]string "Idempotency conflict"
 // @Router       /v1/payouts [post]
-func (h *PayoutHandler) Create(w http.ResponseWriter, r *http.Request) {
+func (h *PayoutHandler) CreatePayout(w http.ResponseWriter, r *http.Request) {
 	var req domain.PayoutRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		h.logger.Warn("failed to decode payout request", slog.Any("error", err))

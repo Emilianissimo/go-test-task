@@ -9,7 +9,7 @@ RUN go mod download
 
 COPY . .
 
-RUN swag init -g cmd/main.go
+RUN swag init -g cmd/main.go --parseDependency --parseInternal
 
 RUN curl -L https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.17.14.tar.gz | tar -xz && \
     cp -r swagger-ui-5.17.14/dist/* ./docs/ && \

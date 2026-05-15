@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"go-test-system/internal/config"
+	_ "go-test-system/internal/domain"
 	"go-test-system/internal/provider/skinport"
 	"go-test-system/internal/service"
 	"log/slog"

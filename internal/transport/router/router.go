@@ -51,7 +51,7 @@ func NewRouter(deps Deps) chi.Router {
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/external/items", itemHandler.FetchItems)
 		r.Get("/wallets/{id}", walletHandler.GetByID)
-		r.With(internalMiddleware.Idempotency(deps.Redis, 24*time.Hour)).Post("/payouts", payoutHandler.Create)
+		r.With(internalMiddleware.Idempotency(deps.Redis, 24*time.Hour)).Post("/payouts", payoutHandler.CreatePayout)
 	})
 
 	return r
