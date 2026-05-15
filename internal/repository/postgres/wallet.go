@@ -2,10 +2,13 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"go-test-system/internal/domain"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/shopspring/decimal"
 )
 
 type WalletRepository struct {
@@ -37,4 +40,20 @@ func (r *WalletRepository) GetByID(ctx context.Context, id int64) (*domain.Walle
 	}
 
 	return wal, nil
+}
+
+func (r *WalletRepository) GetBalanceForUpdate(ctx context.Context, walletID int64) (decimal.Decimal, error) {
+	db := extractDB(ctx, r.db)
+	var balance decimal.Decimal
+	err := db.QueryRow(ctx, "SELECT balance FROM wallets WHERE id = $1 FOR UPDATE", walletID).Scan(&balance)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return decimal.Zero, domain.ErrWalletNotFound
+	}
+	return balance, err
+}
+
+func (r *WalletRepository) UpdateBalance(ctx context.Context, walletID int64, newBalance decimal.Decimal) error {
+	db := extractDB(ctx, r.db)
+	_, err := db.Exec(ctx, "UPDATE wallets SET balance = $1 WHERE id = $2", newBalance, walletID)
+	return err
 }

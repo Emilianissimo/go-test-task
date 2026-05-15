@@ -6,8 +6,10 @@ import (
 	"go-test-system/internal/repository/postgres"
 	"go-test-system/internal/service"
 	"go-test-system/internal/transport/controller"
+	internalMiddleware "go-test-system/internal/transport/middleware"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -42,6 +44,7 @@ func NewRouter(deps Deps) chi.Router {
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/external/items/", itemHandler.FetchItems)
 		r.Get("/wallets/{id}", walletHandler.GetByID)
+		r.With(internalMiddleware.Idempotency(deps.Redis, 24*time.Hour)).Post("/payouts", payoutHandler.Create)
 	})
 
 	return r
