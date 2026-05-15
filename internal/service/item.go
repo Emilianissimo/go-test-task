@@ -61,6 +61,7 @@ func (s *ItemService) GetProcessedItems(ctx context.Context) ([]domain.MergedIte
 	for _, r := range tradableRaw {
 		resMap[r.MarketHashName] = &domain.MergedItem{
 			MarketHashName:   r.MarketHashName,
+			Currency:         r.Currency,
 			MinPriceTradable: r.MinPrice,
 		}
 	}
@@ -71,6 +72,7 @@ func (s *ItemService) GetProcessedItems(ctx context.Context) ([]domain.MergedIte
 		} else {
 			resMap[r.MarketHashName] = &domain.MergedItem{
 				MarketHashName:      r.MarketHashName,
+				Currency:            r.Currency,
 				MinPriceNonTradable: r.MinPrice,
 			}
 		}

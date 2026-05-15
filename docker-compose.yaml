@@ -18,7 +18,7 @@ services:
 
   redis:
     image: redis:7
-    container_name: core_redis_container_dev
+    container_name: go_test_redis
     restart: on-failure
     ports:
       - '6379:6379'

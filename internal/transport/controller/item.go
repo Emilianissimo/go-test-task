@@ -3,7 +3,9 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"go-test-system/internal/config"
+	"go-test-system/internal/provider/skinport"
 	"go-test-system/internal/service"
 	"log/slog"
 	"net/http"
@@ -38,9 +40,17 @@ func NewItemHandler(service *service.ItemService, cfg *config.Config, redis *red
 	}
 }
 
+// FetchItems GoDoc
+// @Summary      Get merged items from Skinport
+// @Description  Fetches tradable and non-tradable items from Skinport API, merges them, and returns with caching.
+// @Tags         external
+// @Produce      json
+// @Success      200  {array}   domain.MergedItem "Successfully merged items"
+// @Failure      502  {object}  map[string]string "Upstream error (Skinport unreachable)"
+// @Router       /v1/external/items/ [get]
 func (h *ItemHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
-	cacheKey := "skinport:items:merged"
+	cacheKey := "skinport:items:merged:" + h.cfg.SkinportAppID + ":" + h.cfg.SkinportCurrency
 
 	startCache := time.Now()
 	cached, err := h.redis.Get(ctx, cacheKey).Result()
@@ -57,8 +67,11 @@ func (h *ItemHandler) FetchItems(w http.ResponseWriter, r *http.Request) {
 
 	items, err := h.service.GetProcessedItems(ctx)
 	if err != nil {
-		h.logger.Error("service failed to provide items", slog.Any("error", err))
-		h.respondError(w, http.StatusBadGateway, "failed to fetch data from upstream")
+		if errors.Is(err, skinport.ErrRateLimit) {
+			h.respondError(w, http.StatusTooManyRequests, "slow down, skinport is angry")
+			return
+		}
+		h.respondError(w, http.StatusBadGateway, "upstream is down")
 		return
 	}
 

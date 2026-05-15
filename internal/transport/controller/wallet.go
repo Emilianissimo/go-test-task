@@ -37,9 +37,9 @@ func (h *WalletHandler) sendError(w http.ResponseWriter, code int, msg string) {
 	}
 }
 
-// GetByID возвращает данные кошелька по ID
-// @Summary Получить кошелек
-// @Description Возвращает баланс и UUID кошелька по внутреннему ID
+// GetByID returns wallet data by ID
+// @Summary Get wallet
+// @Description Returns the balance and UUID of a wallet by internal ID
 // @Tags Wallets
 // @Accept json
 // @Produce json

@@ -73,7 +73,14 @@ func (client *Client) FetchItems(ctx context.Context, tradable bool) ([]domain.I
 	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("skinport returned status: %d", resp.StatusCode)
+		switch resp.StatusCode {
+		case http.StatusTooManyRequests:
+			return nil, ErrRateLimit
+		case http.StatusNotFound:
+			return nil, fmt.Errorf("endpoint not found: %d", resp.StatusCode)
+		default:
+			return nil, fmt.Errorf("%w: status %d", ErrUpstreamError, resp.StatusCode)
+		}
 	}
 
 	var reader io.Reader = resp.Body
@@ -84,7 +91,7 @@ func (client *Client) FetchItems(ctx context.Context, tradable bool) ([]domain.I
 
 	var items []domain.ItemResponse
 	if err := json.NewDecoder(reader).Decode(&items); err != nil {
-		return nil, fmt.Errorf("failed to decode skinport items: %w", err)
+		return nil, fmt.Errorf("%w: %v", ErrDecodingContent, err)
 	}
 
 	return items, nil
