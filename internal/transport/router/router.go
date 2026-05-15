@@ -36,10 +36,17 @@ func NewRouter(deps Deps) chi.Router {
 	itemSvc := service.NewItemService(spClient, deps.Logger)
 	itemHandler := controller.NewItemHandler(itemSvc, deps.Cfg, deps.Redis, deps.Logger)
 
+	// Infra
+	txManager := postgres.NewTxManager(deps.DB)
+
 	// Internal repos and services & controllers
 	walletRepo := postgres.NewWalletRepository(deps.DB)
 	walletSvc := service.NewWalletService(walletRepo, deps.Logger)
 	walletHandler := controller.NewWalletHandler(walletSvc, deps.Logger)
+
+	payoutRepo := postgres.NewPayoutRepository(deps.DB)
+	payoutSvc := service.NewPayoutService(txManager, walletRepo, payoutRepo, deps.Logger)
+	payoutHandler := controller.NewPayoutHandler(payoutSvc, deps.Logger)
 
 	r.Route("/v1", func(r chi.Router) {
 		r.Get("/external/items/", itemHandler.FetchItems)

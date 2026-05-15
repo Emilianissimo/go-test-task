@@ -3,8 +3,6 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"log/slog"
-
 	"go-test-system/internal/domain"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -12,14 +10,12 @@ import (
 )
 
 type PayoutRepository struct {
-	db     *pgxpool.Pool
-	logger *slog.Logger
+	db *pgxpool.Pool
 }
 
-func NewPayoutRepository(db *pgxpool.Pool, logger *slog.Logger) *PayoutRepository {
+func NewPayoutRepository(db *pgxpool.Pool) *PayoutRepository {
 	return &PayoutRepository{
-		db:     db,
-		logger: logger,
+		db: db,
 	}
 }
 
