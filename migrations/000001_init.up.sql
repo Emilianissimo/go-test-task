@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS wallets (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     uuid UUID NOT NULL DEFAULT gen_random_uuid() UNIQUE,
     balance DECIMAL(20, 2) NOT NULL DEFAULT 0.00 CHECK (balance >= 0),
-    version BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -55,6 +55,23 @@ CREATE INDEX idx_wallets_user_id ON wallets(user_id);
 CREATE INDEX idx_payout_wallet_from ON payouts(wallet_from);
 CREATE INDEX idx_tx_idempotency ON transactions(idempotency_key);
 
--- COMMENT ON TABLE deposits IS 'Future table for deposits. Will link to transactions with op_type=2';
+-- deposits IS 'Future table for deposits. Will link to transactions with op_type=2';
+
+--- ONLY FOR TESTING PURPOSES! ---
+--- SEEDING ---
+
+INSERT INTO users (id, name)
+VALUES (1, 'Builder Engineer')
+    ON CONFLICT DO NOTHING;
+
+INSERT INTO wallets (uuid, user_id, balance, created_at, updated_at)
+VALUES (
+       '550e8400-e29b-41d4-a716-446655440000',
+       1,
+       1000.00,
+       NOW(),
+       NOW()
+   )
+ON CONFLICT (user_id) DO NOTHING;
 
 COMMIT;

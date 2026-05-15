@@ -30,6 +30,16 @@ type Config struct {
 	IdleTimeout  time.Duration
 }
 
+// @title Go test task API
+// @version 1.0
+// @description Go test task
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name Emilian
+// @contact.email emilerofeevskij@gmail.com
+
+// @host localhost:8080
+// @BasePath /
 func main() {
 	// Logger
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
@@ -88,8 +98,9 @@ func main() {
 
 	// Routing & Server
 	deps := router.Deps{
-		DB:    dbPool,
-		Redis: rdb,
+		DB:     dbPool,
+		Redis:  rdb,
+		Logger: logger,
 	}
 	newRouter := router.NewRouter(deps)
 

@@ -1,14 +1,6 @@
 set-env:
 	test -f .env || cp .env.example .env
 
-build-app:
-	docker compose build app
-
-start-app:
-	docker compose up -d app
-
-rebuild-app: build-app start-app
-
 build:
 	docker compose build
 
